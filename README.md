@@ -113,13 +113,5 @@ You can log in to the demo workspace using the following credentials seeded in s
 | **Analyst** | `analyst@acme.com` | `Demo1234!` | Can view/edit feedback statuses, run Ask LOOP queries, view reports. |
 | **Viewer** | `viewer@acme.com` | `Demo1234!` | Read-only access to dashboards and reports. |
 
-## 📸 Screenshots
-
-*(Faculty Note: The application uses a strictly dark-mode UI for reduced eye strain and enhanced data visualization contrast.)*
-
-![Dashboard](https://placehold.co/1200x800/0E0E10/A855F7?text=Executive+Dashboard+View)
-![Feedback Inbox](https://placehold.co/1200x800/0E0E10/22D3EE?text=Centralized+Inbox+View)
-![Ask LOOP](https://placehold.co/1200x800/0E0E10/6366F1?text=Ask+LOOP+Semantic+Search)
-
 ---
 *Developed for University Capstone/Showcase Evaluation.*
