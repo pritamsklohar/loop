@@ -43,11 +43,11 @@ const frontendDistPath = path.join(__dirname, '../../client/dist');
 app.use(express.static(frontendDistPath));
 
 // Fallback to React app for non-API routes
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    next();
-  } else {
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api')) {
     res.sendFile(path.join(frontendDistPath, 'index.html'));
+  } else {
+    next();
   }
 });
 
