@@ -155,4 +155,38 @@ router.get('/me', requireAuth, async (req: Request, res: Response): Promise<void
   }
 });
 
+const profileUpdateSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters').optional()
+});
+
+// @route   PATCH /api/auth/profile
+// @desc    Update current user profile
+router.patch('/profile', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsed = profileUpdateSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0].message });
+      return;
+    }
+
+    const { name, password } = parsed.data;
+    const updates: any = {};
+    if (name) updates.name = name;
+    if (password) {
+      updates.passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(req.user!.id, updates, { new: true }).select('-passwordHash');
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json(user);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

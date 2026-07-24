@@ -10,6 +10,7 @@ export const AppLayout: React.FC = () => {
 
   const [workspaceName, setWorkspaceName] = useState<string>('LOOP Workspace');
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [inboxCount, setInboxCount] = useState<number>(0);
   
   // Dropdown States
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState<boolean>(false);
@@ -50,8 +51,19 @@ export const AppLayout: React.FC = () => {
         console.error('Failed to load workspace name:', err);
       }
     };
+
+    const fetchInboxCount = async () => {
+      try {
+        const res = await api.get('/feedback?limit=1');
+        setInboxCount(res.data.total);
+      } catch (err) {
+        console.error('Failed to load inbox count:', err);
+      }
+    };
+
     if (user?.workspaceId) {
       fetchWorkspace();
+      fetchInboxCount();
     }
   }, [user?.workspaceId]);
 
@@ -257,7 +269,7 @@ export const AppLayout: React.FC = () => {
               {!collapsed && <span>Inbox</span>}
             </div>
             {!collapsed && (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isActive('/app/inbox') ? 'bg-[#0E0E10]/20 text-[#0E0E10]' : 'bg-[#1C1C1F] text-[#F2F2F3]'}`}>138</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isActive('/app/inbox') ? 'bg-[#0E0E10]/20 text-[#0E0E10]' : 'bg-[#1C1C1F] text-[#F2F2F3]'}`}>{inboxCount}</span>
             )}
           </Link>
 

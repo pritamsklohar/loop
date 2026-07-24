@@ -12,6 +12,7 @@ export const Settings: React.FC = () => {
   const [workspaceMessage, setWorkspaceMessage] = useState<string | null>(null);
 
   // Profile State
+  const [userName, setUserName] = useState<string>(user?.name || '');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [savingProfile, setSavingProfile] = useState<boolean>(false);
@@ -42,9 +43,7 @@ export const Settings: React.FC = () => {
     try {
       setSavingWorkspace(true);
       setWorkspaceMessage(null);
-      // Wait, let's see if we have an endpoint to update workspace. If not, mock success or update.
-      // In loop server we don't have a PATCH /api/workspace yet. Let's make it a nice mock success.
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await api.patch('/workspace', { name: workspaceName });
       setWorkspaceMessage('Workspace preferences saved successfully.');
     } catch (err: any) {
       setWorkspaceMessage('Failed to update workspace name.');
@@ -55,21 +54,26 @@ export const Settings: React.FC = () => {
 
   const handleProfileSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) return;
-    if (password !== confirmPassword) {
+    if (password && password !== confirmPassword) {
       setProfileMessage('Passwords do not match.');
+      return;
+    }
+    if (!userName.trim()) {
+      setProfileMessage('Display name is required.');
       return;
     }
     try {
       setSavingProfile(true);
       setProfileMessage(null);
-      // In loop server, we don't have update profile password endpoint. Let's mock.
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      setProfileMessage('Password updated successfully.');
+      const payload: any = { name: userName };
+      if (password) payload.password = password;
+      await api.patch('/auth/profile', payload);
+      
+      setProfileMessage('Profile updated successfully! Refresh to see changes.');
       setPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      setProfileMessage('Failed to change password.');
+      setProfileMessage('Failed to update profile.');
     } finally {
       setSavingProfile(false);
     }
@@ -177,7 +181,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <form onSubmit={handleProfileSave} className="border-t border-[#2A2A2E] pt-6 space-y-6">
-              <h3 className="font-extrabold text-[#F2F2F3] text-md">Update Workspace Password</h3>
+              <h3 className="font-extrabold text-[#F2F2F3] text-md">Update Profile Settings</h3>
 
               {profileMessage && (
                 <div className="p-3 bg-coral-500/10 border border-coral-500/20 text-coral-500 rounded text-xs">
@@ -186,11 +190,21 @@ export const Settings: React.FC = () => {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl">
+                <div className="md:col-span-2">
+                  <label className="block text-[#A0A0A6] text-xs font-semibold mb-2">Display Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder="Your Name"
+                    className="w-full bg-[#0E0E10] border border-[#2A2A2E] focus:border-coral-500 rounded-lg p-2.5 text-xs text-[#F2F2F3] focus:outline-none"
+                  />
+                </div>
                 <div>
-                  <label className="block text-[#A0A0A6] text-xs font-semibold mb-2">New Password</label>
+                  <label className="block text-[#A0A0A6] text-xs font-semibold mb-2">New Password (Optional)</label>
                   <input
                     type="password"
-                    required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
@@ -201,7 +215,6 @@ export const Settings: React.FC = () => {
                   <label className="block text-[#A0A0A6] text-xs font-semibold mb-2">Confirm New Password</label>
                   <input
                     type="password"
-                    required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
@@ -212,10 +225,10 @@ export const Settings: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={savingProfile || !password}
-                className="py-2 px-5 bg-coral-500 hover:bg-coral-600 text-[#F2F2F3] text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-md"
+                disabled={savingProfile || !userName.trim()}
+                className="py-2 px-5 bg-coral-500 hover:bg-coral-600 disabled:bg-[#2A2A2E] text-[#F2F2F3] text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-md"
               >
-                {savingProfile ? 'Updating credentials...' : 'Update Password'}
+                {savingProfile ? 'Saving changes...' : 'Save Profile Settings'}
               </button>
             </form>
           </div>

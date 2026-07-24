@@ -37,6 +37,43 @@ router.get(
   }
 );
 
+const workspaceUpdateSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters')
+});
+
+// @route   PATCH /api/workspace
+// @desc    Update workspace details
+// @access  ADMIN
+router.patch(
+  '/',
+  requireAuth,
+  requireWorkspaceScope,
+  requireRole('ADMIN'),
+  async (req, res): Promise<void> => {
+    try {
+      const parsed = workspaceUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.issues[0].message });
+        return;
+      }
+
+      const workspace = await Workspace.findByIdAndUpdate(
+        req.user!.workspaceId,
+        { name: parsed.data.name },
+        { new: true }
+      );
+
+      if (!workspace) {
+        res.status(404).json({ error: 'Workspace not found' });
+        return;
+      }
+      res.json(workspace);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
 // @route   GET /api/workspace/members
 // @desc    Get all members of the workspace
 // @access  ADMIN, ANALYST, VIEWER
